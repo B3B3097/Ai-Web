@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+
+# Node.js
+node_modules/
+.npm/
+.env
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-*
