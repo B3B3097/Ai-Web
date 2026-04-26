@@ -16,9 +16,15 @@ workspace/
 ├── configs/                # Документация по конфигам
 │   └── README.md          # Гайд по настройке единого репозитория
 ├── .env.example           # Пример переменных окружения
+├── .env                   # Ваши настройки (заполните!)
 ├── requirements.txt       # Зависимости Python
-├── README.md              # Этот файл
-└── GITHUB_PAGES_SETUP.md  # Подробная инструкция по GitHub Pages
+├── README.md              # Главный файл
+├── START_HERE.md          # ⭐ НАЧНИТЕ ОТСЮДА!
+├── QUICK_START_PAGES.md   # Быстрая настройка за 5 минут
+├── ENV_SETUP_GUIDE.md     # Как заполнить .env файл
+├── PAGES_CHECKLIST.md     # Чек-лист проверки
+├── README_PAGES.md        # Полное оглавление документации
+└── GITHUB_PAGES_SETUP.md  # Полное руководство
 ```
 
 ## ✨ Возможности
@@ -32,6 +38,12 @@ workspace/
 - ✅ Автоматическая очистка старых конфигов
 
 ## 🚀 Быстрый старт
+
+### ⚡ Самый быстрый способ (5 минут)
+
+**ОТКРОЙТЕ [`START_HERE.md`](./START_HERE.md)** - там ваш план действий!
+
+Или следуйте этой инструкции:
 
 ### Шаг 1: Создайте репозиторий для конфигов
 
@@ -162,8 +174,12 @@ vless-configs/
 
 Для подробной инструкции по настройке смотрите:
 
-- [`GITHUB_PAGES_SETUP.md`](./GITHUB_PAGES_SETUP.md) - Полное руководство по GitHub Pages
-- [`configs/README.md`](./configs/README.md) - Конфигурация и управление
+- **[`START_HERE.md`](./START_HERE.md)** - 🌟 НАЧНИТЕ ОТСЮДА! (ваш план действий)
+- **[`QUICK_START_PAGES.md`](./QUICK_START_PAGES.md)** - ⚡ Пошаговая настройка за 5 минут
+- **[`ENV_SETUP_GUIDE.md`](./ENV_SETUP_GUIDE.md)** - Как заполнить .env файл
+- **[`PAGES_CHECKLIST.md`](./PAGES_CHECKLIST.md)** - ✅ Чек-лист проверки
+- [`GITHUB_PAGES_SETUP.md`](./GITHUB_PAGES_SETUP.md) - 📖 Полное руководство
+- [`configs/README.md`](./configs/README.md) - Управление конфигами
 
 ## 🔧 Решение проблем
 
