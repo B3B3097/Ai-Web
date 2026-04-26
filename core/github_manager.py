@@ -2,6 +2,7 @@
 GitHub integration for config storage and GitHub Pages deployment
 """
 import os
+import logging
 from github import Github
 from typing import Optional, List
 from datetime import datetime
@@ -43,6 +44,18 @@ class GitHubManager:
         else:
             filename = f"configs/{filename}"
         
+        # Ensure configs directory exists by creating .gitkeep if needed
+        try:
+            self.repo.get_contents("configs/.gitkeep")
+        except:
+            # Create configs directory with .gitkeep
+            self.repo.create_file(
+                path="configs/.gitkeep",
+                message="Create configs directory",
+                content="# This directory stores VLESS configurations\n",
+                branch="main"
+            )
+        
         # Check if file exists
         try:
             contents = self.repo.get_contents(filename)
@@ -62,6 +75,9 @@ class GitHubManager:
                 content=config,
                 branch="main"
             )
+        
+        # Update GitHub Pages index
+        self._update_pages_index()
         
         return filename
     
@@ -128,9 +144,61 @@ class GitHubManager:
             repo_name = self.pages_repo.name
             return f"https://{owner}.github.io/{repo_name}/"
     
+    def _update_pages_index(self) -> None:
+        """
+        Automatically update the GitHub Pages index file with all available configs
+        """
+        try:
+            # Get all config files
+            contents = self.repo.get_contents("configs")
+            configs = []
+            
+            if isinstance(contents, list):
+                for item in contents:
+                    if item.name.endswith(".txt") and item.name != ".gitkeep":
+                        # Extract username from filename
+                        parts = item.name.rsplit("_", 2)  # Split from right: username_YYYYMMDD_HHMMSS.txt
+                        if len(parts) >= 3:
+                            username = "_".join(parts[:-2])  # Handle usernames with underscores
+                        else:
+                            username = item.name.replace(".txt", "")
+                        
+                        configs.append({
+                            "username": username,
+                            "filename": item.name,
+                            "created_at": item.last_modified or "Unknown",
+                            "download_url": f"{self.get_pages_url()}configs/{item.name}"
+                        })
+                
+                # Sort by creation time (newest first)
+                configs.sort(key=lambda x: x["filename"], reverse=True)
+                
+                # Generate and upload index.html
+                html_content = self._generate_index_html(configs)
+                
+                try:
+                    contents = self.pages_repo.get_contents("index.html")
+                    self.pages_repo.update_file(
+                        path=contents.path,
+                        message="Update configs index",
+                        content=html_content,
+                        sha=contents.sha,
+                        branch="main"
+                    )
+                except:
+                    self.pages_repo.create_file(
+                        path="index.html",
+                        message="Create configs index",
+                        content=html_content,
+                        branch="main"
+                    )
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Could not update pages index: {e}")
+    
     def update_pages_index(self, configs: List[dict]) -> None:
         """
-        Update the GitHub Pages index file with available configs
+        Update the GitHub Pages index file with available configs (manual override)
         
         Args:
             configs: List of config metadata dictionaries
@@ -158,11 +226,12 @@ class GitHubManager:
         """Generate HTML index page"""
         config_rows = ""
         for config in configs:
+            download_url = config.get('download_url', f"configs/{config['filename']}")
             config_rows += f"""
             <tr>
                 <td>{config['username']}</td>
                 <td>{config['created_at']}</td>
-                <td><a href="configs/{config['filename']}">Download</a></td>
+                <td><a href="{download_url}" target="_blank">Download</a></td>
             </tr>
             """
         
@@ -171,24 +240,36 @@ class GitHubManager:
 <head>
     <title>VLESS Configs</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; }}
-        table {{ border-collapse: collapse; width: 100%; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+        h1 {{ color: #333; }}
+        table {{ border-collapse: collapse; width: 100%; max-width: 800px; margin: 20px auto; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+        th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
         th {{ background-color: #4CAF50; color: white; }}
-        tr:nth-child(even) {{ background-color: #f2f2f2; }}
+        tr:nth-child(even) {{ background-color: #f9f9f9; }}
+        tr:hover {{ background-color: #f1f1f1; }}
+        a {{ color: #4CAF50; text-decoration: none; }}
+        a:hover {{ text-decoration: underline; }}
+        .container {{ max-width: 900px; margin: 0 auto; }}
+        .info {{ background: #e7f3ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; }}
     </style>
 </head>
 <body>
-    <h1>VLESS Configuration Files</h1>
-    <table>
-        <tr>
-            <th>Username</th>
-            <th>Created</th>
-            <th>Download</th>
-        </tr>
-        {config_rows}
-    </table>
+    <div class="container">
+        <h1>🔑 VLESS Configuration Files</h1>
+        <div class="info">
+            <p><strong>Note:</strong> These configuration files are for personal use only. Do not share them publicly.</p>
+        </div>
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Created</th>
+                <th>Download</th>
+            </tr>
+            {config_rows}
+        </table>
+    </div>
 </body>
 </html>
 """
